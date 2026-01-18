@@ -35,7 +35,7 @@ class NexusChannelImpl extends UnicastRemoteObject implements NexusChannel {
     }
 }
 
-public class SyncLink extends JFrame {
+public class SyncLink extends JPanel {
     private static final Color NEON_CYAN = new Color(0, 255, 209);
     private static final Color NEON_PURPLE = new Color(189, 0, 255);
 
@@ -43,32 +43,27 @@ public class SyncLink extends JFrame {
     private int nodeCount;
     private Semaphore quantumLock;
     private NexusChannel nexus;
+    private Runnable backAction;
 
-    public SyncLink() {
-        quantumLock = new Semaphore(1);
-        nodeCount = 0;
+    public SyncLink(Runnable backAction) {
+        this.backAction = backAction;
+        this.quantumLock = new Semaphore(1);
+        this.nodeCount = 0;
 
-        setTitle("AetherOS | SyncLink");
-        setUndecorated(true);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setLayout(new BorderLayout());
 
-        JPanel mainPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                try {
-                    ImageIcon bg = new ImageIcon(getClass().getResource("/aether/resources/bg.jpg"));
-                    g.drawImage(bg.getImage(), 0, 0, getWidth(), getHeight(), this);
-                    g.setColor(new Color(10, 14, 20, 230));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                } catch (Exception e) {
-                    g.setColor(new Color(15, 15, 20));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-            }
-        };
-        mainPanel.setLayout(new BorderLayout());
+        // Header Panel
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        header.setOpaque(false);
+        header.setBorder(BorderFactory.createEmptyBorder(20, 20, 0, 20));
+        
+        JButton backBtn = createNavButton("BACK", e -> {
+            if (backAction != null) backAction.run();
+        });
+        backBtn.setPreferredSize(new Dimension(100, 35));
+        header.add(backBtn);
+        
+        add(header, BorderLayout.NORTH);
 
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         split.setDividerLocation(350);
@@ -80,6 +75,7 @@ public class SyncLink extends JFrame {
 
         logTerminal = new JTextArea();
         logTerminal.setEditable(false);
+        logTerminal.setOpaque(false); // Critical for transparency
         logTerminal.setFont(new Font("Consolas", Font.PLAIN, 18));
         logTerminal.setBackground(new Color(0, 0, 0, 0));
         logTerminal.setForeground(NEON_CYAN);
@@ -93,10 +89,23 @@ public class SyncLink extends JFrame {
         split.setLeftComponent(sidebar);
         split.setRightComponent(scroll);
 
-        mainPanel.add(split, BorderLayout.CENTER);
-        add(mainPanel);
+        add(split, BorderLayout.CENTER);
 
         initializeNexus();
+    }
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        try {
+            ImageIcon bg = new ImageIcon(getClass().getResource("/aether/resources/bg.jpg"));
+            g.drawImage(bg.getImage(), 0, 0, getWidth(), getHeight(), this);
+            g.setColor(new Color(10, 14, 20, 230));
+            g.fillRect(0, 0, getWidth(), getHeight());
+        } catch (Exception e) {
+            g.setColor(new Color(15, 15, 20));
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
     }
 
     private JPanel createSidebar() {
@@ -109,7 +118,7 @@ public class SyncLink extends JFrame {
         title.setForeground(NEON_CYAN);
         panel.add(title);
 
-        panel.add(createNavButton("TERMINATE LINK", e -> dispose()));
+        // Sidebar options strictly for module functions
         panel.add(createNavButton("SPAWN NODE", e -> spawnNode()));
         panel.add(createNavButton("INIT SOCKET", e -> initSocketLink()));
         panel.add(createNavButton("INIT RMI", e -> initRMILink()));

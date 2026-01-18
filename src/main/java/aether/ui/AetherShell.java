@@ -14,9 +14,12 @@ public class AetherShell extends JFrame {
     private AetherKernel kernel;
     private JTable taskTable;
     private DefaultTableModel taskModel;
-    private JFrame rootFrame;
+    
+    // Internal Panels
+    private JPanel mainMenuPanel;
+    private JPanel processManagerPanel;
 
-    // Aether Aesthetic Palette
+    // OptimusPrime Aesthetic Palette
     private static final Color BG_DARK = new Color(10, 14, 20);
     private static final Color SURFACE = new Color(26, 31, 38);
     private static final Color ACCENT_CYAN = new Color(0, 255, 209);
@@ -25,16 +28,29 @@ public class AetherShell extends JFrame {
 
     public AetherShell(AetherKernel kernel) {
         this.kernel = kernel;
+        initFrameSettings();
         initInterface();
+    }
+    
+    private void initFrameSettings() {
+        setTitle("OptimusPrime Kernel | Select Module");
+        setUndecorated(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setVisible(true);
     }
 
     private void initInterface() {
-        rootFrame = new JFrame("AetherOS | Next-Gen Kernel Shell");
-        rootFrame.setUndecorated(true);
-        rootFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        rootFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-        JPanel mainLayer = new JPanel(new BorderLayout()) {
+        if (mainMenuPanel == null) {
+            createMainMenu();
+        }
+        setContentPane(mainMenuPanel);
+        revalidate();
+        repaint();
+    }
+    
+    private void createMainMenu() {
+        mainMenuPanel = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -60,8 +76,8 @@ public class AetherShell extends JFrame {
         header.setOpaque(false);
         header.setBorder(BorderFactory.createEmptyBorder(30, 50, 20, 50));
 
-        JLabel brand = new JLabel("AETHER OS");
-        brand.setFont(new Font("Orbitron", Font.BOLD, 42));
+        JLabel brand = new JLabel("OPTIMUSPRIME");
+        brand.setFont(new Font("Orbitron", Font.BOLD, 36));
         brand.setForeground(ACCENT_CYAN);
         header.add(brand, BorderLayout.WEST);
 
@@ -70,7 +86,7 @@ public class AetherShell extends JFrame {
         status.setForeground(new Color(255, 255, 255, 150));
         header.add(status, BorderLayout.EAST);
 
-        mainLayer.add(header, BorderLayout.NORTH);
+        mainMenuPanel.add(header, BorderLayout.NORTH);
 
         // Sidebar
         JPanel sidebar = new JPanel(new GridLayout(6, 1, 15, 15));
@@ -82,7 +98,7 @@ public class AetherShell extends JFrame {
         sidebar.add(createAetherButton("SYNC LINK", e -> openSyncLink()));
         sidebar.add(createAetherButton("SHUTDOWN", e -> System.exit(0)));
 
-        mainLayer.add(sidebar, BorderLayout.WEST);
+        mainMenuPanel.add(sidebar, BorderLayout.WEST);
 
         // Welcome Hero
         JPanel hero = new JPanel(new GridBagLayout());
@@ -92,24 +108,29 @@ public class AetherShell extends JFrame {
         welcomeMsg.setForeground(TEXT_MAIN);
         hero.add(welcomeMsg);
 
-        mainLayer.add(hero, BorderLayout.CENTER);
-
-        rootFrame.add(mainLayer);
-        rootFrame.setVisible(true);
+        mainMenuPanel.add(hero, BorderLayout.CENTER);
     }
 
     private void showProcessManager() {
-        rootFrame.getContentPane().removeAll();
-
-        JPanel pmPanel = new JPanel(new BorderLayout());
-        pmPanel.setBackground(BG_DARK);
+        if (processManagerPanel == null) {
+            createProcessManager();
+        }
+        setContentPane(processManagerPanel);
+        revalidate();
+        repaint();
+        refreshTaskList();
+    }
+    
+    private void createProcessManager() {
+        processManagerPanel = new JPanel(new BorderLayout());
+        processManagerPanel.setBackground(BG_DARK);
 
         // Header for PM
         JPanel pmHead = new JPanel(new FlowLayout(FlowLayout.LEFT));
         pmHead.setOpaque(false);
         JButton backBtn = createAetherButton("BACK", e -> initInterface());
         pmHead.add(backBtn);
-        pmPanel.add(pmHead, BorderLayout.NORTH);
+        processManagerPanel.add(pmHead, BorderLayout.NORTH);
 
         // Split Layout
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -158,24 +179,23 @@ public class AetherShell extends JFrame {
 
         split.setLeftComponent(tools);
         split.setRightComponent(scroll);
-        pmPanel.add(split, BorderLayout.CENTER);
-
-        rootFrame.add(pmPanel);
-        rootFrame.revalidate();
-        rootFrame.repaint();
-        refreshTaskList();
+        processManagerPanel.add(split, BorderLayout.CENTER);
     }
 
     private void openMemoryMonitor() {
-        rootFrame.dispose();
-        new CellMonitor(kernel);
+        // Create new instance every time to refresh state/registry visualization properly, 
+        // or just to act as a factory.
+        CellMonitor cm = new CellMonitor(kernel, () -> initInterface());
+        setContentPane(cm.getPanel());
+        revalidate();
+        repaint();
     }
 
     private void openSyncLink() {
-        SwingUtilities.invokeLater(() -> {
-            SyncLink sl = new SyncLink();
-            sl.setVisible(true);
-        });
+        SyncLink sl = new SyncLink(() -> initInterface());
+        setContentPane(sl);
+        revalidate();
+        repaint();
     }
 
     private JButton createAetherButton(String text, ActionListener action) {

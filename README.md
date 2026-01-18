@@ -1,4 +1,4 @@
-# AetherOS | Operating System Simulation
+# OptimusPrime Kernel | Operating System Simulation
 
 This project has been reorganized into a standard **Maven** project structure for easy development and execution in **NetBeans**.
 

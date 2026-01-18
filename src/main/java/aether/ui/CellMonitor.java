@@ -14,18 +14,16 @@ public class CellMonitor {
     private LinkedHashMap<Integer, Integer> cellRegistry;
     private JTextArea monitorOutput;
     private int frameLimit;
+    private JPanel contentPanel;
+    private Runnable backAction;
 
-    public CellMonitor(AetherKernel kernel) {
+    public CellMonitor(AetherKernel kernel, Runnable backAction) {
+        this.backAction = backAction;
         this.cellRegistry = new LinkedHashMap<>(16, 0.75f, true);
         this.cellSize = 4096;
         this.frameLimit = 5;
 
-        JFrame displayFrame = new JFrame("AetherOS | Cell Monitor");
-        displayFrame.setUndecorated(true);
-        displayFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        displayFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-        JPanel contentPanel = new JPanel() {
+        contentPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -54,7 +52,7 @@ public class CellMonitor {
         mainSplit.setOpaque(false);
         mainSplit.setBorder(null);
 
-        JPanel navPanel = createNavigationPanel(displayFrame, kernel);
+        JPanel navPanel = createNavigationPanel(kernel);
         navPanel.setOpaque(false);
 
         monitorOutput = new JTextArea();
@@ -73,13 +71,15 @@ public class CellMonitor {
         mainSplit.setRightComponent(scrollArea);
 
         contentPanel.add(mainSplit, BorderLayout.CENTER);
-        displayFrame.add(contentPanel);
-        displayFrame.setVisible(true);
 
         updateMetrics();
     }
 
-    private JPanel createNavigationPanel(JFrame frame, AetherKernel kernel) {
+    public JPanel getPanel() {
+        return contentPanel;
+    }
+
+    private JPanel createNavigationPanel(AetherKernel kernel) {
         JPanel nav = new JPanel(new GridLayout(12, 1, 10, 10));
         nav.setBorder(BorderFactory.createEmptyBorder(50, 30, 50, 30));
 
@@ -89,8 +89,7 @@ public class CellMonitor {
         nav.add(title);
 
         nav.add(createModernButton("Back to Shell", e -> {
-            frame.dispose();
-            new AetherShell(kernel);
+            if (backAction != null) backAction.run();
         }));
 
         nav.add(createModernButton("Provision Cells", e -> provisionCells(kernel)));
@@ -125,7 +124,7 @@ public class CellMonitor {
 
     private void updateMetrics() {
         StringBuilder sb = new StringBuilder();
-        sb.append(">> AETHER CELL REGISTRY STATUS\n");
+        sb.append(">> OPTIMUSPRIME CELL REGISTRY STATUS\n");
         sb.append("------------------------------------------------\n");
 
         if (cellRegistry.isEmpty()) {

@@ -1,0 +1,119 @@
+PROJECT SCHEMA: OPTIMUSPRIME KERNEL (OPERATING SYSTEM SIMULATOR)
+
+================================================================================
+1. SYSTEM ARCHITECTURE & OVERVIEW
+================================================================================
+OptimusPrime Kernel is a high-fidelity Operating System simulator designed to demonstrate 
+foundational OS concepts using a modern, sci-fi visualized interface. 
+It is built on a Java/Maven architecture, leveraging Swing for a responsive GUI 
+and core OOP principles for modular system design.
+
+Key System Modules:
+1. VECTOR CORE (Process Management & CPU Scheduling)
+2. MEMORY HUB (Memory Management & Paging)
+3. SYNC LINK (Inter-Process Communication & Synchronization)
+
+================================================================================
+2. DETAILED FUNCTIONALITY BREAKDOWN
+================================================================================
+
+--------------------------------------------------------------------------------
+A. VECTOR CORE (Process Management)
+--------------------------------------------------------------------------------
+The Vector Core is the CPU Scheduler and Process Manager of OptimusPrime Kernel. It handles
+the lifecycle of "Tasks" (simulated Processes).
+
+KEY FUNCTIONS & IMPLEMENTATION:
+
+1. Create Task ("Add Vector"):
+   - [Function]: Spawns a new process with user-defined Burst Time and Priority.
+   - [Logic]: 
+     - Generates a unique Task ID (PCB - Process Control Block).
+     - Assigns default state "Ready".
+     - Allocates initial memory in the CellStore.
+     - Places the task into the main Job Queue.
+
+2. Dispatch Batch (CPU Scheduling):
+   - [Function]: Executes tasks from the Ready Queue using a selected algorithm.
+   - [Algorithms Available]:
+     a. FCFS (First-Come, First-Served):
+        - Logic: Processes tasks exactly in the order they arrived (Queue FIFO).
+        - Use Case: Simple, non-preemptive batch processing.
+     b. SJF (Shortest Job First):
+        - Logic: Sorts the Ready Queue based on Burst Time (Ascending) before execution.
+        - Use Case: Minimizing average waiting time.
+   - [Visualization]: Updates status from "READY" -> "PROCESSING" -> "TERMINATED".
+
+3. State Control (Suspend/Resume/Kill):
+   - Suspend: Moves a task from the Ready Queue to the Blocked/Waiting Queue.
+   - Resume: Restores a task from Blocked Queue back to Ready Queue.
+   - Kill: Permanently removes the Task PCB from the System Table and deallocates memory.
+
+--------------------------------------------------------------------------------
+B. MEMORY HUB (Memory Management)
+--------------------------------------------------------------------------------
+The Memory Hub visualizes how the OS manages RAM using Paging and Virtual Memory concepts.
+
+KEY FUNCTIONS & IMPLEMENTATION:
+
+1. Provision Cells (Memory Allocation):
+   - [Function]: Simulates allocating memory blocks (Frames) to a process.
+   - [Logic]: 
+     - Calculates required frames based on input size and Page Size (4KB default).
+     - Maps "Cell IDs" to "Owner Node IDs" in the System Registry.
+   
+2. Flux Cycle (LRU Page Replacement):
+   - [Function]: Simulates the Least Recently Used (LRU) page replacement algorithm.
+   - [Logic]:
+     - The system maintains a fixed capacity of active frames.
+     - When the "Flux Cycle" is triggered or memory is full, the Least Recently Used 
+       memory block is "evicted" (removed) to make space for new data.
+     - Implementation uses a LinkedHashMap with access-order, acting as a dedicated "FluxCache".
+
+3. Configuration Parsing:
+   - The system reads `config.txt` on startup to determine total available RAM and Page Size.
+
+--------------------------------------------------------------------------------
+C. SYNC LINK (Synchronization & IPC)
+--------------------------------------------------------------------------------
+Sync Link handles communication between processes and ensures thread safety.
+
+KEY FUNCTIONS & IMPLEMENTATION:
+
+1. Spawn Node (Semaphore Locking):
+   - [Function]: Simulates a critical section problem where multiple nodes compete for a resource.
+   - [Logic]:
+     - Uses a Binary Semaphore (`quantumLock`).
+     - A Node attempts to `acquire()` the lock. If successful, it enters the Critical Section.
+     - Other nodes must wait until the lock is `release()`-ed.
+     - Visualized in the log terminal as "Requesting Lock" -> "Locked" -> "Released".
+
+2. Socket Link (Networking):
+   - [Function]: Opens a TCP Port (9091) to listen for external signals.
+   - [Logic]: Runs a background thread with a `ServerSocket` that accepts incoming connections, simulating network signaling.
+
+3. Nexus Channel (RMI - Remote Method Invocation):
+   - [Function]: Registers a remote object (`NexusChannel`) on a local registry (Port 1101).
+   - [Logic]: Allows other Java programs to strictly invoke methods on this OS instance, demonstrating distributed OS capabilities.
+
+================================================================================
+3. TECHNICAL GUIDE: HOW TO USE & EXTEND
+================================================================================
+
+[Setup Instructions]
+1. Prerequisites: Java JDK 17+.
+2. Configuration: Edit `config.txt` to change 'TotalMemory' or 'PageSize'.
+3. Building: Run `mvn clean install` to compile the project.
+4. Execution: Run `mvn exec:java` or launch `AetherShell` from your IDE.
+
+[Workflow Example]
+1. Start the shell. You will see the "Systems Nominal" dashboard.
+2. Go to **Vector Core**. Create 3 tasks with Burst Times: 10, 5, 8.
+3. Click "Dispatch" -> Select "SJF". Observe how the task with Burst 5 processes first.
+4. Go to **Sync Link**. Click "Spawn Node" multiple times rapidly. Observe the console logs queuing the nodes, verifying the Semaphore is working (process synchronization).
+
+[Extensibility]
+- To add a new Scheduling Algorithm:
+  - Modify `AetherKernel.java`: Add logic to `lowLevelScheduling()` (e.g., Round Robin).
+- To add new System Calls:
+  - Update `AetherShell.java` buttons and link them to new methods in `AetherKernel`.
