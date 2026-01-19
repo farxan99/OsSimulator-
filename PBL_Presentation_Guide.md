@@ -9,18 +9,19 @@ This guide is designed to help you ace your presentation and viva for the Optimu
 **What you need to have ready before you walk in:**
 
 *   **The Working Project**: Ensure the latest build runs without crashing.
-    *   *Sanity Check*: Run `mvn exec:java` one last time.
+    *   *Sanity Check*: Run `mvn exec:java` onae last time.
 *   **Slide Deck (5-7 Slides)**:
     1.  **Title Slide**: Project Name, Your Name/ID.
     2.  **Introduction**: "What is an OS Simulator?" & "Why build it?" (Visualizing abstract concepts).
     3.  **Architecture**: Java Swing (Frontend) + AetherKernel (Backend Logic).
     4.  **Module 1: Vector Core**: Explain Scheduler (FCFS/SJF).
     5.  **Module 2: Memory Hub**: Explain Paging & LRU.
-    6.  **Module 3: Sync Link**: Explain Semaphores & IPC.
+    6.  **Module 3: Sync Link**: Explain   hvhhaaaaaSemaphores & IPC.
     7.  **Future Scope**: Round Robin, File System, Real Networking.
 *   **Code Walkthrough**: detailed in Section 3.
 *   **Live Demo Script**: Know exactly what to click (Don't improvise!).
 
+a
 ---
 
 ### 2. LIVE DEMO SCRIPT (The "Standard Procedure")

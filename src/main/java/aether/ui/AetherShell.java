@@ -76,7 +76,7 @@ public class AetherShell extends JFrame {
         header.setOpaque(false);
         header.setBorder(BorderFactory.createEmptyBorder(30, 50, 20, 50));
 
-        JLabel brand = new JLabel("OPTIMUSPRIME");
+        JLabel brand = new JLabel("OotimusPrime Kernel");
         brand.setFont(new Font("Orbitron", Font.BOLD, 36));
         brand.setForeground(ACCENT_CYAN);
         header.add(brand, BorderLayout.WEST);
@@ -235,12 +235,14 @@ public class AetherShell extends JFrame {
 
     private void createTask() {
         String burst = JOptionPane.showInputDialog("Burst Cycle:");
+        String arrival = JOptionPane.showInputDialog("Arrival Time:");
         String priority = JOptionPane.showInputDialog("Priority Level:");
-        if (burst == null || priority == null)
+        
+        if (burst == null || arrival == null || priority == null)
             return;
 
         try {
-            kernel.createTask(Integer.parseInt(burst), 0, Integer.parseInt(priority));
+            kernel.createTask(Integer.parseInt(burst), Integer.parseInt(arrival), Integer.parseInt(priority));
             refreshTaskList();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Matrix Mismatch: Invalid Input");
